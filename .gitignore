@@ -1,5 +1,9 @@
 ecosystem.config.cjs
 
+
+DONE.md
+TODO.md
+
 # compiled output
 /dist
 /node_modules
