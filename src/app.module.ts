@@ -1,6 +1,5 @@
 import { Logger, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { APP_FILTER } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -14,8 +13,8 @@ import {
   DB_USER,
   NODE_ENV,
 } from './config/configs';
-import { User } from './users/user.entity';
 import { HealthModule } from '@/health/health.module';
+import { AuthCredentials } from '@/auth/auth-credentials.entity';
 
 @Module({
   imports: [
@@ -26,7 +25,7 @@ import { HealthModule } from '@/health/health.module';
       username: DB_USER,
       password: DB_PASSWORD,
       database: DB_NAME,
-      entities: [User],
+      entities: [AuthCredentials],
       synchronize: NODE_ENV === 'development' ? true : false,
       autoLoadEntities: true,
     }),
@@ -34,7 +33,6 @@ import { HealthModule } from '@/health/health.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    UsersModule,
     AuthModule,
     HealthModule,
   ],
