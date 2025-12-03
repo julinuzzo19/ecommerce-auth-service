@@ -11,6 +11,8 @@ const {
   CLIENT_URL,
   PORT,
   JWT_SECRET,
+  GATEWAY_SERVICE,
+  GATEWAY_SECRET,
 } = process.env;
 
 if (
@@ -22,7 +24,9 @@ if (
   !NODE_ENV ||
   !CLIENT_URL ||
   !PORT ||
-  !JWT_SECRET
+  !JWT_SECRET ||
+  !GATEWAY_SERVICE ||
+  !GATEWAY_SECRET
 ) {
   throw new Error('Missing environment variables');
 }
@@ -37,4 +41,6 @@ export {
   CLIENT_URL,
   PORT,
   JWT_SECRET,
+  GATEWAY_SERVICE,
+  GATEWAY_SECRET,
 };
