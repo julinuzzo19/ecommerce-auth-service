@@ -45,10 +45,15 @@ export class AuthController {
 
   @Post('signup')
   @HttpCode(HttpStatus.CREATED)
-  async signUp(@Body() signUpDto: SignUpDto) {
-    const id = await this.authService.signUp(signUpDto);
+  async signUp(
+    @Body() signUpDto: SignUpDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { access_token } = await this.authService.signUp(signUpDto);
 
-    return { message: 'User created successfully', id };
+    res.cookie('access_token', access_token, cookieOptions);
+
+    return { message: 'User created successfully', access_token };
   }
 
   // Endpoint para validar token (usado por API Gateway)

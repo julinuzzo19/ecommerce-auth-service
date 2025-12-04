@@ -43,7 +43,12 @@ export class AuthService {
       throw new NotFoundException();
     }
 
-    const [saltHex, hashHex] = user.password.split(':');
+    const passwordRecord = await this.authCredentialsRepository.findOne({
+      select: ['password'],
+      where: { userId: user.userId },
+    });
+
+    const [saltHex, hashHex] = passwordRecord.password.split(':');
     const salt = Buffer.from(saltHex, 'hex');
     const hash = Buffer.from(hashHex, 'hex');
     const derivedKey = (await this.scrypt(pass, salt, 64)) as Buffer;
@@ -53,14 +58,18 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    const payload = {
+      sub: user.userId,
+      email: user.email,
+      role: 'USER',
+    };
 
     const access_token = await this.jwtService.signAsync(payload);
 
     return { access_token };
   }
 
-  async signUp(signUpDto: SignUpDto): Promise<string> {
+  async signUp(signUpDto: SignUpDto): Promise<{ access_token: string }> {
     const user = await this.usersService.findByEmail(signUpDto.email);
 
     if (user) {
@@ -71,6 +80,7 @@ export class AuthService {
       ...signUpDto,
       role: Role.USER,
     };
+
     // password: await this.hashPassword(signUpDto.password),
 
     const authCredentialsCreate: AuthCredentials = {
@@ -116,9 +126,15 @@ export class AuthService {
 
     await this.authCredentialsRepository.save(authCredentialsToSave);
 
-    // retornar token jwt con id usuario y roles
+    const payload = {
+      sub: user.userId,
+      email: user.email,
+      role: 'USER',
+    };
 
-    return resultUserCreate.id;
+    const access_token = await this.jwtService.signAsync(payload);
+
+    return { access_token };
   }
 
   async validateToken(token: string): Promise<{

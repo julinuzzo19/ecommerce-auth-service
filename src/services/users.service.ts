@@ -3,6 +3,7 @@ import { HttpService } from '@nestjs/axios';
 import { CreateUserDto } from '@/services/dtos/user-create.dto';
 import { GATEWAY_SECRET, GATEWAY_SERVICE } from '@/config/configs';
 import { AxiosRequestConfig } from 'axios';
+import { UserByEmailResponseDto } from '@/services/dtos/user-email.dto';
 
 @Injectable()
 export class UsersService {
@@ -32,7 +33,7 @@ export class UsersService {
       throw new BadRequestException();
     }
   }
-  async findByEmail(email: string): Promise<any> {
+  async findByEmail(email: string): Promise<UserByEmailResponseDto | null> {
     try {
       const response = await this.httpService.axiosRef.get(
         `/users/by-email?email=${email}`,
