@@ -37,10 +37,7 @@ export class AuthService {
   }
 
   async signIn(email: string, pass: string): Promise<{ access_token: string }> {
-    const user = await this.usersService.findOne({
-      select: ['id', 'email', 'password', 'role'],
-      where: { email },
-    });
+    const user = await this.usersService.findByEmail(email);
 
     if (!user) {
       throw new NotFoundException();

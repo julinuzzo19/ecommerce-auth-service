@@ -15,6 +15,7 @@ import {
 } from './config/configs';
 import { HealthModule } from '@/health/health.module';
 import { AuthCredentials } from '@/auth/auth-credentials.entity';
+import { UsersModule } from '@/services/users.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { AuthCredentials } from '@/auth/auth-credentials.entity';
       envFilePath: '.env',
     }),
     AuthModule,
+    UsersModule,
     HealthModule,
   ],
   controllers: [],

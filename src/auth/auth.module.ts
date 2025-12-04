@@ -3,6 +3,9 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { JWT_SECRET } from '../config/configs';
+import { AuthCredentials } from '@/auth/auth-credentials.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { UsersModule } from '@/services/users.module';
 
 @Module({
   imports: [
@@ -15,6 +18,8 @@ import { JWT_SECRET } from '../config/configs';
       },
       global: true,
     }),
+    TypeOrmModule.forFeature([AuthCredentials]),
+    UsersModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],
