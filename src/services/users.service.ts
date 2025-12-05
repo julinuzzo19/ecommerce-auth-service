@@ -29,8 +29,10 @@ export class UsersService {
       );
       return response.data;
     } catch (error) {
-      console.log({ error });
-      throw new BadRequestException();
+      // console.log({ error });
+      throw new BadRequestException(
+        error.response?.data || 'Error creating user',
+      );
     }
   }
   async findByEmail(email: string): Promise<UserByEmailResponseDto | null> {
