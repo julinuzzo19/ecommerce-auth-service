@@ -20,7 +20,7 @@ export class UsersService {
     };
   }
 
-  async create(data: CreateUserDto): Promise<any> {
+  async create(data: CreateUserDto): Promise<string | null> {
     try {
       const response = await this.httpService.axiosRef.post(
         '/users',

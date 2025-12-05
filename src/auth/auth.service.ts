@@ -81,54 +81,30 @@ export class AuthService {
       role: Role.USER,
     };
 
-    // password: await this.hashPassword(signUpDto.password),
-
-    const authCredentialsCreate: AuthCredentials = {
-      id: '',
-      userId: '',
-      password: '',
-      createdAt: new Date(),
-    };
-
-    const dtoAuthCredentials = plainToInstance(
-      CreateCredentialsDto,
-      authCredentialsCreate,
-    );
-
-    const errorsCredentials = await validate(dtoAuthCredentials);
-
-    if (errorsCredentials.length > 0) {
-      throw new BadRequestException(errorsCredentials);
-    }
-
     const dtoUser = plainToInstance(CreateUserDto, bodyUserCreate);
 
     const errors = await validate(dtoUser);
 
     if (errors.length > 0) {
-      // console.log({
-      //   err: errors
-      //     .map((item) => {
-      //       return Object.values(item.constraints)?.join(', ');
-      //     })
-      //     .join(', '),
-      // });
       throw new BadRequestException(errors);
     }
 
-    const resultUserCreate = await this.usersService.create(bodyUserCreate);
+    const userCreatedId = await this.usersService.create(bodyUserCreate);
+
+    if (!userCreatedId) {
+      throw new BadRequestException('User could not be created');
+    }
 
     const authCredentialsToSave = this.authCredentialsRepository.create({
-      ...authCredentialsCreate,
-      userId: resultUserCreate.id,
+      userId: userCreatedId,
       password: await this.hashPassword(signUpDto.password),
     });
 
     await this.authCredentialsRepository.save(authCredentialsToSave);
 
     const payload = {
-      sub: user.userId,
-      email: user.email,
+      sub: userCreatedId,
+      email: bodyUserCreate.email,
       role: 'USER',
     };
 
