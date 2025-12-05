@@ -1,6 +1,9 @@
 ecosystem.config.cjs
 
 
+.env.prod
+.env.dev
+
 DONE.md
 TODO.md
 
