@@ -32,7 +32,6 @@ import { UsersModule } from '@/services/users.module';
     }),
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env',
     }),
     AuthModule,
     UsersModule,
