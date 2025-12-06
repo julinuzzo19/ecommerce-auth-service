@@ -65,6 +65,13 @@ async function bootstrap() {
     SwaggerModule.setup('swagger', app, documentFactory);
   }
 
-  await app.listen(process.env.PORT);
+  const host =
+    process.env.NODE_ENV === 'production'
+      ? process.env.HOST || '0.0.0.0'
+      : '0.0.0.0';
+
+  const port = process.env.PORT;
+
+  await app.listen(port, host);
 }
 bootstrap();
