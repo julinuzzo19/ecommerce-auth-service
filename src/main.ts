@@ -11,7 +11,6 @@ import { GlobalExceptionFilter } from './config/exceptions.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { CLIENT_URL, NODE_ENV } from './config/configs';
 import { join } from 'path';
-// import { doubleCsrf } from 'csrf-csrf';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -27,7 +26,7 @@ async function bootstrap() {
   app.use(cookieParser());
 
   // add prefix
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api/v1', { exclude: ['health', 'metrics'] });
 
   // csrf protection
   // const { doubleCsrfProtection } = doubleCsrf({
