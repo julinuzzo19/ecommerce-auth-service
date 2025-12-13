@@ -29,6 +29,14 @@ import { UsersModule } from '@/services/users.module';
       entities: [AuthCredentials],
       synchronize: NODE_ENV === 'development' ? true : false,
       autoLoadEntities: true,
+
+      connectTimeout: 10000, // 10 seconds
+      extra: {
+        connectionLimit: 10,
+        queueLimit: 0,
+        waitForConnections: true,
+        connectTimeout: 10000, // También aquí para el driver mysql2
+      },
     }),
     ConfigModule.forRoot({
       isGlobal: true,

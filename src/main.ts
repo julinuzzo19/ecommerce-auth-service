@@ -10,6 +10,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { GlobalExceptionFilter } from './config/exceptions.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { CLIENT_URL, NODE_ENV } from './config/configs';
+import type { Server } from 'http';
 import { join } from 'path';
 
 async function bootstrap() {
@@ -72,6 +73,8 @@ async function bootstrap() {
 
   const port = process.env.PORT;
 
-  await app.listen(port, host);
+  const server: Server = await app.listen(port, host);
+
+  server.setTimeout(30000);
 }
 bootstrap();
