@@ -47,8 +47,6 @@ export class AuthService {
       where: { userId: user.userId },
     });
 
-    console.log({ passwordRecord });
-
     const [saltHex, hashHex] = passwordRecord.password.split(':');
     const salt = Buffer.from(saltHex, 'hex');
     const hash = Buffer.from(hashHex, 'hex');
@@ -92,7 +90,6 @@ export class AuthService {
 
     const userCreatedId = await this.usersService.create(bodyUserCreate);
 
-    console.log({ userCreatedId });
     if (!userCreatedId) {
       throw new BadRequestException('User could not be created');
     }
