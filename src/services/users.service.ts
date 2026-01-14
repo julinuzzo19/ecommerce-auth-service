@@ -27,7 +27,7 @@ export class UsersService {
         data,
         this.baseConfig,
       );
-      return response.data;
+      return response.data?.userId;
     } catch (error) {
       // console.log({ error });
       throw new BadRequestException(

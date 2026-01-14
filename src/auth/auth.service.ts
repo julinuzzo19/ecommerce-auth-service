@@ -14,7 +14,6 @@ import { UsersService } from '@/services/users.service';
 import { CreateUserDto } from '@/services/dtos/user-create.dto';
 import { Role } from '@/roles/role';
 import { AuthCredentials } from '@/auth/auth-credentials.entity';
-import { CreateCredentialsDto } from '@/auth/dto/create-credentials.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -47,6 +46,8 @@ export class AuthService {
       select: ['password'],
       where: { userId: user.userId },
     });
+
+    console.log({ passwordRecord });
 
     const [saltHex, hashHex] = passwordRecord.password.split(':');
     const salt = Buffer.from(saltHex, 'hex');
@@ -91,6 +92,7 @@ export class AuthService {
 
     const userCreatedId = await this.usersService.create(bodyUserCreate);
 
+    console.log({ userCreatedId });
     if (!userCreatedId) {
       throw new BadRequestException('User could not be created');
     }
