@@ -47,11 +47,16 @@ export class AuthService {
       where: { userId: user.userId },
     });
 
-    const [saltHex, hashHex] = passwordRecord.password.split(':');
-    const salt = Buffer.from(saltHex, 'hex');
-    const hash = Buffer.from(hashHex, 'hex');
-    const derivedKey = (await this.scrypt(pass, salt, 64)) as Buffer;
-    const isMatch = crypto.timingSafeEqual(hash, derivedKey);
+    let isMatch;
+    try {
+      const [saltHex, hashHex] = passwordRecord.password.split(':');
+      const salt = Buffer.from(saltHex, 'hex');
+      const hash = Buffer.from(hashHex, 'hex');
+      const derivedKey = (await this.scrypt(pass, salt, 64)) as Buffer;
+      isMatch = crypto.timingSafeEqual(hash, derivedKey);
+    } catch (error) {
+      console.log({ error });
+    }
 
     if (!isMatch) {
       throw new UnauthorizedException();
