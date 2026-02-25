@@ -5,7 +5,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { JWT_SECRET } from '../config/configs';
 import './interfaces/jwt-payload.interface';
 
 @Injectable()
@@ -20,9 +19,7 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException();
     }
     try {
-      const payload = await this.jwtService.verifyAsync(tokenFromCookie, {
-        secret: JWT_SECRET,
-      });
+      const payload = await this.jwtService.verifyAsync(tokenFromCookie);
 
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers

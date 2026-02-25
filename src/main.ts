@@ -9,52 +9,54 @@ import * as morgan from 'morgan';
 import { ValidationPipe } from '@nestjs/common';
 import { GlobalExceptionFilter } from './config/exceptions.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { CLIENT_URL, NODE_ENV } from './config/configs';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import type { Server } from 'http';
 import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  // helmet configuration
+
+  // Leídos acá porque main.ts corre antes de que NestJS inicialice el DI container.
+  // ConfigService no está disponible fuera del contexto de módulos.
+  const nodeEnv = process.env.NODE_ENV ?? 'production';
+  const clientUrl = process.env.CLIENT_URL ?? '';
+
+  // Agrega headers de seguridad HTTP (X-Frame-Options, CSP, etc.)
   app.use(helmet());
-  // CORS configuration
+
+  // En producción solo permite el origen configurado. En desarrollo acepta cualquiera.
   app.enableCors({
     methods: ['POST', 'GET', 'PUT', 'PATCH', 'DELETE'],
-    origin: NODE_ENV === 'production' ? CLIENT_URL : '*',
+    origin: nodeEnv === 'production' ? clientUrl : '*',
     credentials: true,
   });
-  // cookie configuration
+
+  // Necesario para leer req.cookies en guards y controllers
   app.use(cookieParser());
 
-  // add prefix
+  // Prefijo global. Health y metrics quedan sin prefijo para los healthchecks del orquestador.
   app.setGlobalPrefix('api/v1', { exclude: ['health', 'metrics'] });
 
-  // csrf protection
-  // const { doubleCsrfProtection } = doubleCsrf({
-  //   cookieName: 'csrf-token',
-  //   getSecret: (req) => 'secret-csrf-token-cookie-value',
-  //   cookieOptions: {
-  //     secure: process.env.NODE_ENV === 'production',
-  //   },
-  //   size: 64,
-  //   ignoredMethods: ['GET', 'HEAD', 'OPTIONS'],
-  //   getTokenFromRequest: (req) => req.headers['x-csrf-token'],
-  // });
-  // app.use(doubleCsrfProtection);
-
-  // logger configuration
+  // Reemplaza el logger por defecto de NestJS con la instancia Winston configurada en logger.ts
   app.useLogger(WinstonModule.createLogger({ instance: logger }));
-  // log http requests
+
+  // Log de cada request HTTP en stdout (formato 'dev': método, ruta, status, tiempo)
   app.use(morgan('dev'));
-  // validations
+
+  // Valida automáticamente los DTOs en todos los endpoints. Rechaza payloads inválidos con 400.
   app.useGlobalPipes(new ValidationPipe());
-  // exceptions handler
+
+  // Captura todas las excepciones no manejadas y devuelve una respuesta JSON consistente
   app.useGlobalFilters(new GlobalExceptionFilter());
-  // serve avatar users
+
+  // Loguea método, ruta y tiempo de respuesta de cada request vía Winston
+  app.useGlobalInterceptors(new LoggingInterceptor());
+
+  // Sirve imágenes de avatars como archivos estáticos
   app.use('/avatars', express.static(join(process.cwd(), 'public', 'avatars')));
 
-  // documentation configuration
-  if (NODE_ENV === 'production') {
+  // Swagger solo en producción para no exponer la documentación en desarrollo
+  if (nodeEnv === 'production') {
     const config = new DocumentBuilder()
       .setTitle('Users API')
       .setDescription('The users API with NestJS')
@@ -66,15 +68,14 @@ async function bootstrap() {
     SwaggerModule.setup('swagger', app, documentFactory);
   }
 
+  // En producción escucha en 0.0.0.0 para ser accesible desde el host del contenedor
   const host =
-    process.env.NODE_ENV === 'production'
-      ? process.env.HOST || '0.0.0.0'
-      : '0.0.0.0';
+    nodeEnv === 'production' ? process.env.HOST || '0.0.0.0' : '0.0.0.0';
 
   const port = process.env.PORT;
 
   const server: Server = await app.listen(port, host);
-
+  // Timeout de 30s para requests lentas (ej: queries pesadas al gateway)
   server.setTimeout(30000);
 }
 bootstrap();

@@ -1,45 +1,47 @@
 import { Logger, Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { APP_FILTER } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { GlobalExceptionFilter } from './config/exceptions.filter';
-import {
-  DB_HOST,
-  DB_NAME,
-  DB_PASSWORD,
-  DB_PORT,
-  DB_USER,
-  NODE_ENV,
-} from './config/configs';
 import { HealthModule } from '@/health/health.module';
 import { AuthCredentials } from '@/auth/auth-credentials.entity';
 import { UsersModule } from '@/services/users.module';
+import { envSchema } from './config/configs';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: DB_HOST,
-      port: DB_PORT,
-      username: DB_USER,
-      password: DB_PASSWORD,
-      database: DB_NAME,
-      entities: [AuthCredentials],
-      synchronize: NODE_ENV === 'development' ? true : false,
-      autoLoadEntities: true,
-
-      connectTimeout: 10000, // 10 seconds
-      extra: {
-        connectionLimit: 10,
-        queueLimit: 0,
-        waitForConnections: true,
-        connectTimeout: 10000, // También aquí para el driver mysql2
-      },
-    }),
+    // isGlobal: true → ConfigService se puede inyectar en cualquier módulo sin importar ConfigModule localmente.
+    // validate: corre el schema Zod al arrancar. Si falta una variable o tiene tipo incorrecto, la app no levanta.
     ConfigModule.forRoot({
       isGlobal: true,
+      validate: (config) => envSchema.parse(config),
+    }),
+
+    // forRootAsync permite inyectar ConfigService para leer las vars en runtime,
+    // en lugar de resolverlas en import-time con process.env directo.
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        type: 'mysql',
+        host: config.get<string>('DB_HOST'),
+        port: config.get<number>('DB_PORT'),
+        username: config.get<string>('DB_USER'),
+        password: config.get<string>('DB_PASSWORD'),
+        database: config.get<string>('DB_NAME'),
+        entities: [AuthCredentials],
+        // synchronize solo en desarrollo. En producción usar migraciones.
+        synchronize: config.get<string>('NODE_ENV') === 'development',
+        autoLoadEntities: true,
+        connectTimeout: 10000,
+        extra: {
+          connectionLimit: 10,
+          queueLimit: 0,
+          waitForConnections: true,
+          connectTimeout: 10000,
+        },
+      }),
     }),
     AuthModule,
     UsersModule,
@@ -47,6 +49,8 @@ import { UsersModule } from '@/services/users.module';
   ],
   controllers: [],
   providers: [
+    // APP_FILTER registra el filtro globalmente a través del DI container de NestJS.
+    // A diferencia de useGlobalFilters() en main.ts, este tiene acceso a la DI (puede inyectar servicios).
     {
       provide: APP_FILTER,
       useClass: GlobalExceptionFilter,

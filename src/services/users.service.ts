@@ -1,21 +1,25 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
+import { ConfigService } from '@nestjs/config';
 import { CreateUserDto } from '@/services/dtos/user-create.dto';
-import { GATEWAY_SECRET, GATEWAY_SERVICE } from '@/config/configs';
 import { AxiosRequestConfig } from 'axios';
 import { UserByEmailResponseDto } from '@/services/dtos/user-email.dto';
+import { EnvConfig } from '@/config/configs';
 
 @Injectable()
 export class UsersService {
   private readonly baseConfig: AxiosRequestConfig;
 
-  constructor(private readonly httpService: HttpService) {
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly config: ConfigService<EnvConfig>,
+  ) {
     this.baseConfig = {
-      baseURL: GATEWAY_SERVICE,
+      baseURL: this.config.get('GATEWAY_SERVICE'),
       timeout: 5000,
       headers: {
         'Content-Type': 'application/json',
-        'x-gateway-secret': GATEWAY_SECRET,
+        'x-gateway-secret': this.config.get('GATEWAY_SECRET'),
       },
     };
   }
@@ -29,12 +33,12 @@ export class UsersService {
       );
       return response.data?.userId;
     } catch (error) {
-      // console.log({ error });
       throw new BadRequestException(
         error.response?.data || 'Error creating user',
       );
     }
   }
+
   async findByEmail(email: string): Promise<UserByEmailResponseDto | null> {
     try {
       const response = await this.httpService.axiosRef.get(

@@ -15,7 +15,8 @@ import { AuthService } from './auth.service';
 import { LoginDto, SignUpDto } from './dto/login.dto';
 import { cookieOptions } from '../config/cookies';
 import { AuthGuard } from './auth.guard';
-import './interfaces/jwt-payload.interface';
+import { CurrentUser } from './decorators/current-user.decorator';
+import { JwtPayload } from './interfaces/jwt-payload.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -82,9 +83,7 @@ export class AuthController {
   @Get('me')
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
-  async getCurrentUser(@Req() req: Request) {
-    // El AuthGuard ya validó el token y puso el payload en req.user
-    const user = req['user'] as { sub: string; email: string; role: string };
+  getCurrentUser(@CurrentUser() user: JwtPayload) {
     return {
       id: user.sub,
       email: user.email,

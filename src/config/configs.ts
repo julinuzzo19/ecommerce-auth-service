@@ -1,46 +1,24 @@
-import * as dotenv from 'dotenv';
-dotenv.config();
+import { z } from 'zod';
 
-const {
-  DB_HOST,
-  DB_USER,
-  DB_PASSWORD,
-  DB_NAME,
-  DB_PORT,
-  NODE_ENV = 'production',
-  CLIENT_URL,
-  PORT,
-  JWT_SECRET,
-  GATEWAY_SERVICE,
-  GATEWAY_SECRET,
-} = process.env;
+// Schema de validación de variables de entorno.
+// Se ejecuta una vez al arrancar la app via ConfigModule.forRoot({ validate }).
+// Si falta una variable o tiene tipo incorrecto, Zod lanza un error descriptivo
+// antes de que NestJS termine de inicializar, evitando errores silenciosos en runtime.
+export const envSchema = z.object({
+  DB_HOST: z.string().min(1),
+  DB_USER: z.string().min(1),
+  DB_PASSWORD: z.string().min(1),
+  DB_NAME: z.string().min(1),
+  // z.coerce.number() convierte el string del .env a número automáticamente
+  DB_PORT: z.coerce.number().int().positive(),
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('production'),
+  CLIENT_URL: z.url(),
+  PORT: z.coerce.number().int().positive().default(3000),
+  JWT_SECRET: z.string().min(1),
+  GATEWAY_SERVICE: z.url(),
+  GATEWAY_SECRET: z.string().min(1),
+});
 
-if (
-  !DB_HOST ||
-  !DB_USER ||
-  !DB_PASSWORD ||
-  !DB_NAME ||
-  !DB_PORT ||
-  !NODE_ENV ||
-  !CLIENT_URL ||
-  !PORT ||
-  !JWT_SECRET ||
-  !GATEWAY_SERVICE ||
-  !GATEWAY_SECRET
-) {
-  throw new Error('Missing environment variables');
-}
-
-export {
-  DB_HOST,
-  DB_USER,
-  DB_PASSWORD,
-  DB_NAME,
-  DB_PORT,
-  NODE_ENV,
-  CLIENT_URL,
-  PORT,
-  JWT_SECRET,
-  GATEWAY_SERVICE,
-  GATEWAY_SECRET,
-};
+// Tipo inferido del schema. Usado para tipar ConfigService<EnvConfig>
+// y obtener autocompletado al hacer config.get('DB_HOST')
+export type EnvConfig = z.infer<typeof envSchema>;

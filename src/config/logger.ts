@@ -1,6 +1,6 @@
 import { createLogger, format, transports } from 'winston';
 import { ConsoleTransportOptions } from 'winston/lib/winston/transports';
-import { NODE_ENV } from './configs';
+const NODE_ENV = process.env.NODE_ENV ?? 'production';
 
 const { combine, timestamp, label, printf } = format;
 

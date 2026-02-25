@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -13,9 +14,10 @@ import { validate } from 'class-validator';
 import { UsersService } from '@/services/users.service';
 import { CreateUserDto } from '@/services/dtos/user-create.dto';
 import { Role } from '@/roles/role';
-import { AuthCredentials } from '@/auth/auth-credentials.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import {
+  AUTH_CREDENTIALS_REPO,
+  IAuthCredentialsRepository,
+} from './repositories/auth-credentials.repository.interface';
 
 @Injectable()
 export class AuthService {
@@ -23,8 +25,8 @@ export class AuthService {
   private scrypt = promisify(crypto.scrypt);
 
   constructor(
-    @InjectRepository(AuthCredentials)
-    private authCredentialsRepository: Repository<AuthCredentials>,
+    @Inject(AUTH_CREDENTIALS_REPO)
+    private authCredentialsRepository: IAuthCredentialsRepository,
     private jwtService: JwtService,
     private usersService: UsersService,
   ) {}
@@ -42,14 +44,12 @@ export class AuthService {
       throw new NotFoundException();
     }
 
-    const passwordRecord = await this.authCredentialsRepository.findOne({
-      select: ['password'],
-      where: { userId: user.userId },
-    });
+    const storedPassword =
+      await this.authCredentialsRepository.findPasswordByUserId(user.userId);
 
     let isMatch;
     try {
-      const [saltHex, hashHex] = passwordRecord.password.split(':');
+      const [saltHex, hashHex] = storedPassword.split(':');
       const salt = Buffer.from(saltHex, 'hex');
       const hash = Buffer.from(hashHex, 'hex');
       const derivedKey = (await this.scrypt(pass, salt, 64)) as Buffer;
@@ -99,12 +99,10 @@ export class AuthService {
       throw new BadRequestException('User could not be created');
     }
 
-    const authCredentialsToSave = this.authCredentialsRepository.create({
-      userId: userCreatedId,
-      password: await this.hashPassword(signUpDto.password),
-    });
-
-    await this.authCredentialsRepository.save(authCredentialsToSave);
+    await this.authCredentialsRepository.saveCredentials(
+      userCreatedId,
+      await this.hashPassword(signUpDto.password),
+    );
 
     const payload = {
       sub: userCreatedId,
