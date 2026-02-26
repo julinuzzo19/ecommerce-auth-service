@@ -10,24 +10,32 @@ on:
 
 env:
   IMAGE: ghcr.io/${{ github.repository }}
+  # Ruta del monorepo en el server (WSL o VPS)
+  COMPOSE_DIR: /home/julian/ecommerce
 
 jobs:
   deploy:
     name: Deploy to server
-    runs-on: self-hosted  # Corre en tu WSL donde instalaste el runner, no en un runner de GitHub
+    runs-on: self-hosted  # Corre en WSL donde instalaste el runner
 
-    # Solo deploya si el workflow de CI terminó con éxito
+    # Solo deploya si CI terminó con éxito
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
-      # Login al registry — el runner en WSL necesita autenticarse para hacer pull
+      # Login al registry — necesario para hacer pull de imágenes privadas
       - name: Login to ghcr.io
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      # Bajar la imagen nueva al server (tu WSL en este caso)
+      # Bajar la imagen nueva buildeada por CI
       - name: Pull image
         run: docker pull ${{ env.IMAGE }}:latest
 
-      # Reiniciar solo auth-service sin afectar otros servicios del stack
-      - name: Deploy
-        run: docker compose -f /app/docker-compose.yml up -d --no-deps auth-service
+      # Reinicia solo ecommerce-auth-service usando el override de producción.
+      # --no-deps: no reinicia servicios dependientes (DB, RabbitMQ, etc.)
+      # El override prod reemplaza build: por image: apuntando a ghcr.io
+      - name: Deploy auth-service
+        run: |
+          docker compose \
+            -f ${{ env.COMPOSE_DIR }}/docker-compose-dev.yml \
+            -f ${{ env.COMPOSE_DIR }}/docker-compose.prod.yml \
+            up -d --no-deps ecommerce-auth-service
