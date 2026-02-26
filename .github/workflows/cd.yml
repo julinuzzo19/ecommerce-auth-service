@@ -1,0 +1,33 @@
+name: CD
+
+# Solo corre cuando CI termina exitosamente en main.
+# Nunca se ejecuta en PRs — garantiza que solo se deploya código ya mergeado y verificado.
+on:
+  workflow_run:
+    workflows: [CI]
+    branches: [main]
+    types: [completed]
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}
+
+jobs:
+  deploy:
+    name: Deploy to server
+    runs-on: self-hosted  # Corre en tu WSL donde instalaste el runner, no en un runner de GitHub
+
+    # Solo deploya si el workflow de CI terminó con éxito
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      # Login al registry — el runner en WSL necesita autenticarse para hacer pull
+      - name: Login to ghcr.io
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      # Bajar la imagen nueva al server (tu WSL en este caso)
+      - name: Pull image
+        run: docker pull ${{ env.IMAGE }}:latest
+
+      # Reiniciar solo auth-service sin afectar otros servicios del stack
+      - name: Deploy
+        run: docker compose -f /app/docker-compose.yml up -d --no-deps auth-service

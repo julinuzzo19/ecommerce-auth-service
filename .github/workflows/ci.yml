@@ -1,0 +1,48 @@
+name: CI
+
+# Corre en PRs hacia main y en pushes directos a main.
+# Responsabilidad: verificar que el código compila y buildea correctamente.
+# El deploy es responsabilidad exclusiva de cd.yml, que depende de este job.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}
+
+jobs:
+  build:
+    name: Build & Push image
+    runs-on: ubuntu-latest
+
+    # Expone el SHA de la imagen como output para que cd.yml pueda usarlo
+    outputs:
+      image-tag: ${{ github.sha }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Login a ghcr.io con el GITHUB_TOKEN automático del workflow — sin secrets adicionales
+      - name: Login to ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # En PRs solo buildea para verificar que no hay errores — no pushea.
+      # En push a main buildea y pushea con dos tags:
+      #   :latest → siempre apunta al build más reciente de main
+      #   :<sha>  → snapshot permanente, usado para rollback
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          # push: true solo cuando es push a main, no en PRs
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          tags: |
+            ${{ env.IMAGE }}:latest
+            ${{ env.IMAGE }}:${{ github.sha }}

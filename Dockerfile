@@ -5,14 +5,17 @@ WORKDIR /app
 # Copiar package.json y package-lock.json
 COPY package*.json ./
 
-# Instalar dependencias
-RUN npm ci --only=production && npm cache clean --force
+# Instalar todas las dependencias (incluyendo devDependencies para poder compilar TS)
+RUN npm ci && npm cache clean --force
 
 # Copiar código fuente
 COPY . .
 
-# Compilar TypeScript
+# Compilar TypeScript — genera /app/dist
 RUN npm run build
+
+# Eliminar devDependencies después del build para no copiarlas a producción
+RUN npm prune --production
 
 # ====================================
 # Etapa de producción
