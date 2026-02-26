@@ -13,7 +13,7 @@ env:
   IMAGE: ghcr.io/${{ github.repository }}
 
 # Permisos explícitos para que GITHUB_TOKEN pueda pushear imágenes a ghcr.io.
-# Sin esto el token solo tiene permiso de lectura en packages.
+# Sin esto el token solo tiene permiso de lectura en packages. PRUEBA
 permissions:
   contents: read
   packages: write
