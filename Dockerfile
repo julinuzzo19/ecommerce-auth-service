@@ -6,7 +6,8 @@ WORKDIR /app
 COPY package*.json ./
 
 # Instalar todas las dependencias (incluyendo devDependencies para poder compilar TS)
-RUN npm ci && npm cache clean --force
+RUN npm ci
+RUN npm cache clean --force
 
 # Copiar código fuente
 COPY . .
