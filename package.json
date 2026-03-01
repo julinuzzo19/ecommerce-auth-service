@@ -87,10 +87,35 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "**/*.(t|j)s",
+      "!**/*.module.(t|j)s",
+      "!**/main.(t|j)s",
+      "!**/*.dto.(t|j)s",
+      "!**/*.entity.(t|j)s",
+      "!**/*.interface.(t|j)s",
+      "!**/*.decorator.(t|j)s",
+      "!**/role.(t|j)s",
+      "!**/index.(t|j)s",
+      "!**/config/logger.(t|j)s",
+      "!**/config/configs.(t|j)s",
+      "!**/config/custom.d.(t|j)s",
+      "!**/config/exceptions.filter.(t|j)s",
+      "!**/health/**.(t|j)s",
+      "!**/utils/generateUUID.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/$1"
+    },
+    "coverageThreshold": {
+      "global": {
+        "lines": 80,
+        "functions": 80,
+        "branches": 75,
+        "statements": 80
+      }
+    }
   },
   "lint-staged": {
     "*.ts": [
