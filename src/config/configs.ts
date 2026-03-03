@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 // Schema de validación de variables de entorno.
 // Se ejecuta una vez al arrancar la app via ConfigModule.forRoot({ validate }).
@@ -11,7 +11,7 @@ export const envSchema = z.object({
   DB_NAME: z.string().min(1),
   // z.coerce.number() convierte el string del .env a número automáticamente
   DB_PORT: z.coerce.number().int().positive(),
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('production'),
+  NODE_ENV: z.enum(["development", "production", "test"]).default("production"),
   CLIENT_URL: z.url(),
   PORT: z.coerce.number().int().positive().default(3000),
   JWT_SECRET: z.string().min(1),

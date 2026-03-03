@@ -1,13 +1,13 @@
-import { Module } from '@nestjs/common';
-import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
-import { JwtModule } from '@nestjs/jwt';
-import { AuthCredentials } from '@/auth/auth-credentials.entity';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsersModule } from '@/services/users.module';
-import { AUTH_CREDENTIALS_REPO } from './repositories/auth-credentials.repository.interface';
-import { TypeOrmAuthCredentialsRepository } from './repositories/auth-credentials.typeorm.repository';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { Module } from "@nestjs/common";
+import { AuthController } from "./auth.controller";
+import { AuthService } from "./auth.service";
+import { JwtModule } from "@nestjs/jwt";
+import { AuthCredentials } from "@/auth/auth-credentials.entity";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { UsersModule } from "@/services/users.module";
+import { AUTH_CREDENTIALS_REPO } from "./repositories/auth-credentials.repository.interface";
+import { TypeOrmAuthCredentialsRepository } from "./repositories/auth-credentials.typeorm.repository";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 
 @Module({
   imports: [
@@ -17,11 +17,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('JWT_SECRET'),
+        secret: config.get<string>("JWT_SECRET"),
         signOptions: {
-          expiresIn: '1h',
-          issuer: 'auth-service',
-          audience: 'api-gateway',
+          expiresIn: "1h",
+          issuer: "auth-service",
+          audience: "api-gateway",
         },
         global: true,
       }),

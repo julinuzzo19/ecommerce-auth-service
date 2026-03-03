@@ -1,7 +1,7 @@
-import { Request } from 'express';
-import { User } from '../users/user.entity';
+import { Request } from "express";
+import { User } from "../users/user.entity";
 
-declare module 'express' {
+declare module "express" {
   interface Request {
     user?: { sub: string; email: string }; // Puedes especificar el tipo exacto de tu objeto usuario
   }
@@ -15,7 +15,7 @@ declare global {
       DB_PASSWORD: string;
       DB_NAME: string;
       DB_PORT: number;
-      NODE_ENV: 'development' | 'production';
+      NODE_ENV: "development" | "production";
       CLIENT_URL: string;
       PORT: number;
       JWT_SECRET: string;

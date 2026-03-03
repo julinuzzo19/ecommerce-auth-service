@@ -1,12 +1,7 @@
-import {
-  CallHandler,
-  ExecutionContext,
-  Injectable,
-  NestInterceptor,
-} from '@nestjs/common';
-import { Observable, tap } from 'rxjs';
-import { Request, Response } from 'express';
-import { logger } from '@/config/logger';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from "@nestjs/common";
+import { Observable, tap } from "rxjs";
+import { Request, Response } from "express";
+import { logger } from "@/config/logger";
 
 // Interceptor global que loguea cada request y response HTTP.
 // Se registra en main.ts via app.useGlobalInterceptors().
@@ -31,8 +26,7 @@ export class LoggingInterceptor implements NestInterceptor {
       tap((responseBody) => {
         const ms = Date.now() - start;
         const status = response.statusCode;
-        const body =
-          responseBody !== undefined ? JSON.stringify(responseBody) : '-';
+        const body = responseBody !== undefined ? JSON.stringify(responseBody) : "-";
         logger.info(`← ${method} ${url} ${status} - ${ms}ms | body: ${body}`);
       }),
     );

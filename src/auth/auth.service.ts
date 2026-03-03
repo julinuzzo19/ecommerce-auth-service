@@ -4,20 +4,20 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
-} from '@nestjs/common';
-import * as crypto from 'crypto';
-import { promisify } from 'util';
-import { JwtService } from '@nestjs/jwt';
-import { SignUpDto } from './dto/login.dto';
-import { plainToInstance } from 'class-transformer';
-import { validate } from 'class-validator';
-import { UsersService } from '@/services/users.service';
-import { CreateUserDto } from '@/services/dtos/user-create.dto';
-import { Role } from '@/roles/role';
+} from "@nestjs/common";
+import * as crypto from "crypto";
+import { promisify } from "util";
+import { JwtService } from "@nestjs/jwt";
+import { SignUpDto } from "./dto/login.dto";
+import { plainToInstance } from "class-transformer";
+import { validate } from "class-validator";
+import { UsersService } from "@/services/users.service";
+import { CreateUserDto } from "@/services/dtos/user-create.dto";
+import { Role } from "@/roles/role";
 import {
   AUTH_CREDENTIALS_REPO,
   IAuthCredentialsRepository,
-} from './repositories/auth-credentials.repository.interface';
+} from "./repositories/auth-credentials.repository.interface";
 
 @Injectable()
 export class AuthService {
@@ -34,7 +34,7 @@ export class AuthService {
   private async hashPassword(password: string): Promise<string> {
     const salt = crypto.randomBytes(this.saltLength);
     const hash = (await this.scrypt(password, salt, 64)) as Buffer;
-    return `${salt.toString('hex')}:${hash.toString('hex')}`;
+    return `${salt.toString("hex")}:${hash.toString("hex")}`;
   }
 
   async signIn(email: string, pass: string): Promise<{ access_token: string }> {
@@ -44,14 +44,13 @@ export class AuthService {
       throw new NotFoundException();
     }
 
-    const storedPassword =
-      await this.authCredentialsRepository.findPasswordByUserId(user.userId);
+    const storedPassword = await this.authCredentialsRepository.findPasswordByUserId(user.userId);
 
     let isMatch;
     try {
-      const [saltHex, hashHex] = storedPassword.split(':');
-      const salt = Buffer.from(saltHex, 'hex');
-      const hash = Buffer.from(hashHex, 'hex');
+      const [saltHex, hashHex] = storedPassword.split(":");
+      const salt = Buffer.from(saltHex, "hex");
+      const hash = Buffer.from(hashHex, "hex");
       const derivedKey = (await this.scrypt(pass, salt, 64)) as Buffer;
       isMatch = crypto.timingSafeEqual(hash, derivedKey);
     } catch (error) {
@@ -65,7 +64,7 @@ export class AuthService {
     const payload = {
       sub: user.userId,
       email: user.email,
-      role: 'USER',
+      role: "USER",
     };
 
     const access_token = await this.jwtService.signAsync(payload);
@@ -77,7 +76,7 @@ export class AuthService {
     const user = await this.usersService.findByEmail(signUpDto.email);
 
     if (user) {
-      throw new BadRequestException('Email already in use');
+      throw new BadRequestException("Email already in use");
     }
 
     const bodyUserCreate: CreateUserDto = {
@@ -96,7 +95,7 @@ export class AuthService {
     const userCreatedId = await this.usersService.create(bodyUserCreate);
 
     if (!userCreatedId) {
-      throw new BadRequestException('User could not be created');
+      throw new BadRequestException("User could not be created");
     }
 
     await this.authCredentialsRepository.saveCredentials(
@@ -107,7 +106,7 @@ export class AuthService {
     const payload = {
       sub: userCreatedId,
       email: bodyUserCreate.email,
-      role: 'USER',
+      role: "USER",
     };
 
     const access_token = await this.jwtService.signAsync(payload);
@@ -134,7 +133,7 @@ export class AuthService {
     } catch (error) {
       return {
         valid: false,
-        message: error.message || 'Invalid token',
+        message: error.message || "Invalid token",
       };
     }
   }

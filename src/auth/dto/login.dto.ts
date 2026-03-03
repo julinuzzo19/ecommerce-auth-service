@@ -1,8 +1,8 @@
-import { IsEmail, IsNotEmpty } from 'class-validator';
+import { IsEmail, IsNotEmpty } from "class-validator";
 
 export class LoginDto {
   @IsEmail()
-  @IsNotEmpty({ message: 'Email is required' })
+  @IsNotEmpty({ message: "Email is required" })
   email: string;
   // @IsStrongPassword({
   //   minLength: 8,
@@ -10,12 +10,12 @@ export class LoginDto {
   //   minNumbers: 1,
   //   minSymbols: 1,
   // })
-  @IsNotEmpty({ message: 'Password is required' })
+  @IsNotEmpty({ message: "Password is required" })
   password: string;
 }
 export class SignUpDto {
   @IsEmail()
-  @IsNotEmpty({ message: 'Email is required' })
+  @IsNotEmpty({ message: "Email is required" })
   email: string;
   // @IsStrongPassword({
   //   minLength: 8,
@@ -23,8 +23,8 @@ export class SignUpDto {
   //   minNumbers: 1,
   //   minSymbols: 1,
   // })
-  @IsNotEmpty({ message: 'Password is required' })
+  @IsNotEmpty({ message: "Password is required" })
   password: string;
-  @IsNotEmpty({ message: 'Name is required' })
+  @IsNotEmpty({ message: "Name is required" })
   name: string;
 }

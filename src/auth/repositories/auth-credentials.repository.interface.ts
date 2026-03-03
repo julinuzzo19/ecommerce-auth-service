@@ -9,4 +9,4 @@ export interface IAuthCredentialsRepository {
 // Token de inyección. Se usa un Symbol en lugar de la clase concreta para que
 // NestJS resuelva la interfaz abstracta en el DI container.
 // Uso: @Inject(AUTH_CREDENTIALS_REPO) en el constructor del service.
-export const AUTH_CREDENTIALS_REPO = Symbol('IAuthCredentialsRepository');
+export const AUTH_CREDENTIALS_REPO = Symbol("IAuthCredentialsRepository");
