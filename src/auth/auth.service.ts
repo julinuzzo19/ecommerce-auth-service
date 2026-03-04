@@ -45,7 +45,6 @@ export class AuthService {
     }
 
     const storedPassword = await this.authCredentialsRepository.findPasswordByUserId(user.userId);
-
     let isMatch;
     try {
       const [saltHex, hashHex] = storedPassword.split(":");

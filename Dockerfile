@@ -13,7 +13,7 @@ RUN npm cache clean --force
 COPY . .
 
 # Compilar TypeScript — genera /app/dist
-RUN npm run build
+RUN rm -rf dist && npm run build
 
 # Eliminar devDependencies después del build para no copiarlas a producción
 RUN npm prune --production
