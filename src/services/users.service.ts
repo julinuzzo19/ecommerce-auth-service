@@ -44,4 +44,15 @@ export class UsersService {
       }
     }
   }
+
+  async findById(userId: string): Promise<UserByEmailResponseDto | null> {
+    try {
+      const response = await this.httpService.axiosRef.get(`/users/${userId}`, this.baseConfig);
+      return response.data;
+    } catch (error) {
+      if (error.response && error.response.status === 404) {
+        return null;
+      }
+    }
+  }
 }

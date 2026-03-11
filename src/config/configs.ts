@@ -15,6 +15,9 @@ export const envSchema = z.object({
   CLIENT_URL: z.url(),
   PORT: z.coerce.number().int().positive().default(3000),
   JWT_SECRET: z.string().min(1),
+  // Duración del access token JWT. Valor por defecto: 15 minutos.
+  // Ej: "15m", "1h", "30s". El refresh token en DB tiene TTL propio de 7 días.
+  JWT_EXPIRES_IN: z.string().default("15m"),
   GATEWAY_SERVICE: z.url(),
   GATEWAY_SECRET: z.string().min(1),
 });

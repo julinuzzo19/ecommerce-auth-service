@@ -7,6 +7,7 @@ import { DataSource } from "typeorm";
 import { GlobalExceptionFilter } from "./config/exceptions.filter";
 import { HealthModule } from "@/health/health.module";
 import { AuthCredentials } from "@/auth/auth-credentials.entity";
+import { RefreshToken } from "@/auth/refresh-token.entity";
 import { UsersModule } from "@/services/users.module";
 import { envSchema } from "./config/configs";
 
@@ -30,7 +31,7 @@ import { envSchema } from "./config/configs";
         username: config.get<string>("DB_USER"),
         password: config.get<string>("DB_PASSWORD"),
         database: config.get<string>("DB_NAME"),
-        entities: [AuthCredentials],
+        entities: [AuthCredentials, RefreshToken],
         // synchronize solo en desarrollo. En producción usar migraciones.
         synchronize: config.get<string>("NODE_ENV") === "development",
         autoLoadEntities: true,
